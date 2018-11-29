@@ -1,8 +1,299 @@
+# -*- encoding: utf-8 -*-
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
-database = ''' 
+isGetAll = []
+firstTemplates = '''<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Web admin</title>
+
+    <!-- Bootstrap core CSS-->
+    <link href="./static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template-->
+    <link href="./static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+
+    <!-- Page level plugin CSS-->
+    <link href="./static/vendor/datatables/dataTables.bootstrap4.css" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="./static/css/sb-admin.css" rel="stylesheet">
+
+  </head>
+
+  <body id="page-top">
+
+    <nav class="navbar navbar-expand navbar-dark bg-dark static-top">
+
+      <a class="navbar-brand mr-1" href="index.html">Web Admin</a>
+
+      <button class="btn btn-link btn-sm text-white order-1 order-sm-0" id="sidebarToggle" href="#">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <!-- Navbar Search -->
+      <form class="d-none d-md-inline-block form-inline ml-auto mr-0 mr-md-3 my-2 my-md-0">
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
+          <div class="input-group-append">
+            <button class="btn btn-primary" type="button">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Navbar -->
+      <ul class="navbar-nav ml-auto ml-md-0">
+        <li class="nav-item dropdown no-arrow mx-1">
+          <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-bell fa-fw"></i>
+            <span class="badge badge-danger">9+</span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="alertsDropdown">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown no-arrow mx-1">
+          <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-envelope fa-fw"></i>
+            <span class="badge badge-danger">7</span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="messagesDropdown">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown no-arrow">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-user-circle fa-fw"></i>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+            <a class="dropdown-item" href="#">Settings</a>
+            <a class="dropdown-item" href="#">Activity Log</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">Logout</a>
+          </div>
+        </li>
+      </ul>
+
+    </nav>
+
+    <div id="wrapper">
+
+      <!-- Sidebar -->
+      <ul class="sidebar navbar-nav">
+
+        <li class="nav-item active">
+          <a class="nav-link" href="tables.html">
+            <i class="fas fa-fw fa-table"></i>
+            <span>Tables</span></a>
+        </li>
+      </ul>
+
+      <div id="content-wrapper">
+
+        <div class="container-fluid">
+
+          <!-- Breadcrumbs-->
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="#">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">Tables</li>
+          </ol>
+          <div class="row">
+            <div class="col-4"></div>
+            <div class="col-4">
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#getModal">Get</button>
+                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#postModal">Post</button>
+                    </div>
+            </div>
+            <div class="col-4"></div>
+          </div>
+          <br>
+
+          <!-- DataTables Example -->
+          <div class="card mb-3">
+            <div class="card-header">
+              <i class="fas fa-table"></i>
+              Data Table Example</div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Position</th>
+                      <th>Office</th>
+                      <th>Age</th>
+                      <th>Start date</th>
+                      <th>Salary</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Name</th>
+                      <th>Position</th>
+                      <th>Office</th>
+                      <th>Age</th>
+                      <th>Start date</th>
+                      <th>Salary</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div>
+          </div>
+
+
+        </div>
+        <!-- /.container-fluid -->
+
+        <!-- Sticky Footer -->
+        <footer class="sticky-footer">
+          <div class="container my-auto">
+            <div class="copyright text-center my-auto">
+              <span>Copyright © Web admin</span>
+            </div>
+          </div>
+        </footer>
+
+      </div>
+      <!-- /.content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+      <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <a class="btn btn-primary" href="login.html">Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- get modal -->
+    <div class="modal fade" id="getModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="getModalLabel">New message</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+            <div class="modal-body">
+              <form method="POST" action="http://localhost:4141/getUser">
+               <input type="text" class="form-control" id="name" name="name">
+                <button type="submit" class="btn btn-primary">Get</button>
+              </form>
+            </div>
+            <div class="modal-footer">
+
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+              <form method="GET" action="http://localhost:4141/getUserAll">
+              <button type="submit" class="btn btn-primary">GetAll</button>
+              </form>
+
+
+            </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- post modal -->
+    <div class="modal fade" id="postModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="postModalLabel">New message</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form method=post action="http://localhost:4141/postUser">
+            <div class="modal-body">
+                  <div class="form-group">
+                    <label for="recipient-name" class="col-form-label">Name:</label>
+                    <input type="text" class="form-control" id="recipient-name" name="name">
+                    <label for="recipient-name" class="col-form-label">Position:</label>
+                    <input type="text" class="form-control" id="recipient-name" name="position">
+                    <label for="recipient-name" class="col-form-label">Office:</label>
+                    <input type="text" class="form-control" id="recipient-name" name="office">
+                    <label for="recipient-name" class="col-form-label">Age:</label>
+                    <input type="text" class="form-control" id="recipient-name" name="age">
+                    <label for="recipient-name" class="col-form-label">Start date:</label>
+                    <input type="text" class="form-control" id="recipient-name" name="startDate">
+                    <label for="recipient-name" class="col-form-label">Salary:</label>
+                    <input type="text" class="form-control" id="recipient-name" name="salary">
+                  </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Create</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="./static/vendor/jquery/jquery.min.js"></script>
+    <script src="./static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="./static/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="./static/vendor/datatables/jquery.dataTables.js"></script>
+    <script src="./static/vendor/datatables/dataTables.bootstrap4.js"></script>
+    <script src="./static/js/sb-admin.min.js'"></script>
+
+    <!-- Demo scripts for this page-->
+    <!--<script src="js/demo/datatables-demo.js"></script>-->
+  <script src="{{ url_for('static', filename='js/demo/datatables-demo.js') }}"></script>
+
+  </body>
+
+</html>
+'''
+database = ''' <tbody>
+                        {}
                     <tr>
                       <td>Tiger Nixon</td>
                       <td>System Architect</td>
@@ -460,45 +751,69 @@ database = '''
                       <td>$112,000</td>
                     </tr>
                   '''
-@app.route("/")
+tableForm = '''<tbody>
+
+                     {}
+
+                </tbody>'''
+@app.route("/index")
 def index():
-    return render_template("tables.html")
+    return firstTemplates
+
+@app.route("/")
+def inde():
+    return redirect("http://localhost:4141/index",302)
 
 @app.route("/getUser", methods=['POST'])
 def getUser():
+    if isGetAll!=[]:
+        isGetAll.pop(0)
+        isGetAll.append('false')
+    else:
+        isGetAll.append('false')
     dataArray = database.split("<tr>")
     mem = []
     for str in dataArray:
+        print(str.__contains__(request.form['name']))
         if(str.__contains__(request.form['name'])):
             mem.append("<tr>" + str)
-    return mem
+    dataArray = firstTemplates.split("<tbody>")
+    return dataArray[0]+mem[0]+dataArray[1]
 
 @app.route("/getUserAll", methods=['GET'])
 def getUserAll():
-    objFile = extractObjFile()
-    dataArray = objFile.read().split("<tbody>")
-    f = open("./templates/tablesNow.html", "w")
-    f.write(dataArray[0]+database+dataArray[1])
-    return render_template("tablesNow.html")
+    if isGetAll!=[]:
+        isGetAll.pop(0)
+        isGetAll.append('true')
+    else:
+        isGetAll.append('true')
+    dataArray = firstTemplates.split("<tbody>")
+    return dataArray[0]+database.format("")+dataArray[1]
 
-@app.route("/postUser")
+@app.route("/postUser", methods=['POST'])
 def postUser():
-    return ""
+    name = request.form['name']
+    position = request.form['position']
+    office = request.form['office']
+    age = request.form['age']
+    startDate = request.form['startDate']
+    salary = request.form['salary']
 
-@app.route("/putUser")
-def putUser():
-    return ""
+    createForm = '''<tr>
+      <td>{}</td>
+      <td>{}</td>
+      <td>{}</td>
+      <td>{}</td>
+      <td>{}</td>
+      <td>{}</td>
+    </tr>'''
 
-@app.route("/deleteUser")
-def deleteUser():
-    return ""
-
-def extractObjFile():
-    f = open("./templates/tables.html", "r+")
-    return f
+    dataArray = firstTemplates.split("<tbody>")
+    if isGetAll[0]=='true':
+        return dataArray[0]+database.format(tableForm.format(createForm.format(name, position, office, age, startDate, salary)))+dataArray[1]
+    else:
+        return dataArray[0]+tableForm.format(createForm.format(name, position, office, age, startDate, salary))+dataArray[1]
 
 if __name__ == "__main__":
-    objFile = extractObjFile()
-    dataArray = objFile.read().split("<tr>")
-    print(dataArray)
+    print('StartServer')
     app.run(debug=True, host="0.0.0.0", port=4141)
