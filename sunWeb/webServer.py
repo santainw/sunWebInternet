@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import logging
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 
@@ -756,6 +757,8 @@ tableForm = '''<tbody>
                      {}
 
                 </tbody>'''
+tableMemWDB = []
+tableMem = []
 @app.route("/index")
 def index():
     return firstTemplates
@@ -777,6 +780,8 @@ def getUser():
         print(str.__contains__(request.form['name']))
         if(str.__contains__(request.form['name'])):
             mem.append("<tr>" + str)
+            app.logger.info('%s ', str)
+
     dataArray = firstTemplates.split("<tbody>")
     return dataArray[0]+mem[0]+dataArray[1]
 
@@ -788,6 +793,7 @@ def getUserAll():
     else:
         isGetAll.append('true')
     dataArray = firstTemplates.split("<tbody>")
+    app.logger.info('%s get All')
     return dataArray[0]+database.format("")+dataArray[1]
 
 @app.route("/postUser", methods=['POST'])
@@ -798,7 +804,15 @@ def postUser():
     age = request.form['age']
     startDate = request.form['startDate']
     salary = request.form['salary']
-
+    buildMsg = {
+        'name' : request.form['name'],
+        'position' : request.form['position'],
+        'office' : request.form['office'],
+        'age' : request.form['age'],
+        'startDate' : request.form['startDate'],
+        'salary' : request.form['salary']
+    }
+    app.logger.info('%s post :', buildMsg)
     createForm = '''<tr>
       <td>{}</td>
       <td>{}</td>
@@ -807,13 +821,15 @@ def postUser():
       <td>{}</td>
       <td>{}</td>
     </tr>'''
-
+    tableMemWDB.append(tableForm.format(createForm.format(name, position, office, age, startDate, salary)))
+    tableMem.append(tableForm.format(createForm.format(name, position, office, age, startDate, salary)))
     dataArray = firstTemplates.split("<tbody>")
     if isGetAll[0]=='true':
-        return dataArray[0]+database.format(tableForm.format(createForm.format(name, position, office, age, startDate, salary)))+dataArray[1]
+        return dataArray[0]+database.format(tableMemWDB).replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1]
     else:
-        return dataArray[0]+tableForm.format(createForm.format(name, position, office, age, startDate, salary))+dataArray[1]
+        return dataArray[0]+tableMem.replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1]
 
 if __name__ == "__main__":
     print('StartServer')
+    logging.basicConfig(filename='log.log',level=logging.INFO)
     app.run(debug=True, host="0.0.0.0", port=4141)
