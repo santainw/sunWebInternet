@@ -4,6 +4,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
+tempMem = []
 isGetAll = []
 firstTemplates = '''<!DOCTYPE html>
 <html lang="en">
@@ -769,32 +770,59 @@ def inde():
 
 @app.route("/getUser", methods=['POST'])
 def getUser():
-    if isGetAll!=[]:
-        isGetAll.pop(0)
-        isGetAll.append('false')
+    if(tempMem!=[]):
+        if isGetAll!=[]:
+            isGetAll.pop(0)
+            isGetAll.append('false')
+        else:
+            isGetAll.append('false')
+        dataArray = tempMem[0].split("<tr>")
+        mem = []
+        for str in dataArray:
+            print(str.__contains__(request.form['name']))
+            if(str.__contains__(request.form['name'])):
+                mem.append("<tr>" + str)
+                app.logger.info('%s ', str)
+
+        dataArray = firstTemplates.split("<tbody>")
+        return dataArray[0]+mem[0]+dataArray[1]
     else:
-        isGetAll.append('false')
-    dataArray = database.split("<tr>")
-    mem = []
-    for str in dataArray:
-        print(str.__contains__(request.form['name']))
-        if(str.__contains__(request.form['name'])):
-            mem.append("<tr>" + str)
-            app.logger.info('%s ', str)
+        if isGetAll!=[]:
+            isGetAll.pop(0)
+            isGetAll.append('false')
+        else:
+            isGetAll.append('false')
+        dataArray = database.split("<tr>")
+        mem = []
+        for str in dataArray:
+            print(str.__contains__(request.form['name']))
+            if(str.__contains__(request.form['name'])):
+                mem.append("<tr>" + str)
+                app.logger.info('%s ', str)
 
-    dataArray = firstTemplates.split("<tbody>")
-    return dataArray[0]+mem[0]+dataArray[1]
-
+        dataArray = firstTemplates.split("<tbody>")
+        return dataArray[0]+mem[0]+dataArray[1]
 @app.route("/getUserAll", methods=['GET'])
 def getUserAll():
-    if isGetAll!=[]:
-        isGetAll.pop(0)
-        isGetAll.append('true')
+    if(tempMem!=[]):
+        if isGetAll!=[]:
+            isGetAll.pop(0)
+            isGetAll.append('true')
+        else:
+            isGetAll.append('true')
+        dataArray = firstTemplates.split("<tbody>")
+        app.logger.info('%s get All')
+        return tempMem[0]
     else:
-        isGetAll.append('true')
-    dataArray = firstTemplates.split("<tbody>")
-    app.logger.info('%s get All')
-    return dataArray[0]+database.format("")+dataArray[1]
+        if isGetAll!=[]:
+            isGetAll.pop(0)
+            isGetAll.append('true')
+        else:
+            isGetAll.append('true')
+        dataArray = firstTemplates.split("<tbody>")
+        app.logger.info('%s get All')
+        return dataArray[0]+database.format("")+dataArray[1]
+
 
 @app.route("/postUser", methods=['POST'])
 def postUser():
@@ -824,10 +852,22 @@ def postUser():
     tableMemWDB.append(tableForm.format(createForm.format(name, position, office, age, startDate, salary)))
     tableMem.append(tableForm.format(createForm.format(name, position, office, age, startDate, salary)))
     dataArray = firstTemplates.split("<tbody>")
-    if isGetAll[0]=='true':
-        return dataArray[0]+database.format(tableMemWDB).replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1]
+    if(tempMem!=[]):
+        tempMem.pop(0)
+        if isGetAll[0]=='true':
+            tempMem.append(dataArray[0]+database.format(tableMemWDB).replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1])
+            return dataArray[0]+database.format(tableMemWDB).replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1]
+        else:
+            tempMem.append(dataArray[0]+tableMem.replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1])
+            return dataArray[0]+tableMem.replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1]
     else:
-        return dataArray[0]+tableMem.replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1]
+        if isGetAll[0]=='true':
+            tempMem.append(dataArray[0]+database.format(tableMemWDB).replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1])
+            return dataArray[0]+database.format(tableMemWDB).replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1]
+        else:
+            tempMem.append(dataArray[0]+tableMem.replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1])
+            return dataArray[0]+tableMem.replace("\\n",'').replace('[', '').replace(']', '').replace('\'', '').replace(',', '')+dataArray[1]
+
 
 if __name__ == "__main__":
     print('StartServer')
